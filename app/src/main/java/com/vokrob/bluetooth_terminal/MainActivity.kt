@@ -6,20 +6,25 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.vokrob.bluetooth_terminal.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     private var btAdapter: BluetoothAdapter? = null
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var adapter: RcAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        binding = ActivityMainBinding.inflate(layoutInflater)
+
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
+        setContentView(binding.root)
         init()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -32,15 +37,20 @@ class MainActivity : AppCompatActivity() {
     private fun init() {
         val btManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         btAdapter = btManager.adapter
+        adapter = RcAdapter()
+        binding.rcView.layoutManager = LinearLayoutManager(this)
+        binding.rcView.adapter = adapter
         getPairedDevices()
     }
 
     @SuppressLint("MissingPermission")
     private fun getPairedDevices() {
         val pairedDevices: Set<BluetoothDevice>? = btAdapter?.bondedDevices
+        val tempList = ArrayList<ListItem>()
         pairedDevices?.forEach {
-            Log.d("MyLog", "Name: ${it.name}")
+            tempList.add(ListItem(it.name, it.address))
         }
+        adapter.submitList(tempList)
     }
 }
 
