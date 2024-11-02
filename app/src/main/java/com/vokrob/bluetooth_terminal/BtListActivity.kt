@@ -5,15 +5,19 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.Context
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.vokrob.bluetooth_terminal.databinding.ActivityMainBinding
 
-class MainActivity : AppCompatActivity() {
+class BtListActivity : AppCompatActivity(), RcAdapter.Listener {
     private var btAdapter: BluetoothAdapter? = null
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: RcAdapter
@@ -25,6 +29,15 @@ class MainActivity : AppCompatActivity() {
 
         enableEdgeToEdge()
         setContentView(binding.root)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.statusBarColor = ContextCompat.getColor(this, R.color.green_dark)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            window.decorView.systemUiVisibility =
+                window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+        }
+
         init()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -37,7 +50,7 @@ class MainActivity : AppCompatActivity() {
     private fun init() {
         val btManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         btAdapter = btManager.adapter
-        adapter = RcAdapter()
+        adapter = RcAdapter(this)
         binding.rcView.layoutManager = LinearLayoutManager(this)
         binding.rcView.adapter = adapter
         getPairedDevices()
@@ -51,6 +64,18 @@ class MainActivity : AppCompatActivity() {
             tempList.add(ListItem(it.name, it.address))
         }
         adapter.submitList(tempList)
+    }
+
+    companion object {
+        const val DEVICE_KEY = "device_key"
+    }
+
+    override fun onClick(item: ListItem) {
+        val i = Intent().apply {
+            putExtra(DEVICE_KEY, item)
+        }
+        setResult(RESULT_OK, i)
+        finish()
     }
 }
 
