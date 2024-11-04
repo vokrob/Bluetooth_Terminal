@@ -30,6 +30,14 @@ class ControlActivity : AppCompatActivity() {
         setContentView(binding.root)
         onBtListResult()
         init()
+        binding.apply {
+            bA.setOnClickListener {
+                btConnection.sendMessage("A")
+            }
+            bB.setOnClickListener {
+                btConnection.sendMessage("B")
+            }
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             window.statusBarColor = ContextCompat.getColor(this, R.color.green_dark)
